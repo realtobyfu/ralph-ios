@@ -37,7 +37,11 @@ Each iteration is one full AI invocation. Budget 2–5 minutes per iteration whe
 | `ralph-codex.sh` | Codex convenience wrapper |
 | `examples/CLAUDE.md` | Claude execution loop contract |
 | `examples/PLAN.md` | Claude/Amp planning contract |
+| `examples/REGEN_PLAN.md` | Mid-project plan regeneration contract |
+| `examples/AGENT.md` | Agent self-updating learnings file |
 | `examples/fix_plan.md` | Plan template (P0/P1/P2 sections) |
+| `examples/specs/` | Feature specification files (one per feature area) |
+| `examples/stdlib/` | iOS coding convention reference files |
 | `examples/CODEX.md` | Codex execution contract |
 | `examples/CODEX_PLAN.md` | Codex planning contract |
 
@@ -142,6 +146,7 @@ Example reference inside `CLAUDE.md`:
 |---|---|---|
 | `--tool claude\|amp\|codex` | `claude` | AI tool to invoke |
 | `--plan-loop` | off | Planning mode (reads PLAN.md or CODEX_PLAN.md) |
+| `--regen-plan` | off | Mid-project plan refresh (reads REGEN_PLAN.md) |
 | `--prompt FILE` | auto | Override the prompt file |
 | `--sleep N` | `2` | Seconds to sleep between iterations |
 | `N` (positional) | `10` | Max iterations |
@@ -155,12 +160,33 @@ Examples:
 # Run 15 iterations with amp
 ./ralph.sh --tool amp 15
 
+# Refresh plan mid-project
+./ralph.sh --tool claude --regen-plan
+
 # Custom prompt, slow sleep for expensive builds
 ./ralph.sh --tool claude --prompt my-prompt.md --sleep 10 5
 
 # Codex shorthand
 ./ralph-codex.sh 10
 ```
+
+## Mid-project Plan Refresh
+
+After several execution loops, `fix_plan.md` can drift from reality: some checked items may be incomplete, new TODOs appear in the code, and the original plan may not cover new discoveries from `specs/`.
+
+Run `--regen-plan` to audit and rebuild the plan:
+
+```bash
+./ralph.sh --tool claude --regen-plan
+```
+
+The `REGEN_PLAN.md` contract tells the agent to:
+1. Read all `specs/*.md` to understand intended behavior
+2. Search the codebase for `TODO`, `FIXME`, stubs, and placeholder implementations
+3. Cross-reference findings against already-checked items in `fix_plan.md`
+4. Produce a fresh plan that preserves history but adds newly discovered work
+
+Use this when: you've completed a phase and want to find what was missed, you've added new specs mid-project, or the plan feels stale relative to the codebase.
 
 ## Safety Note
 
